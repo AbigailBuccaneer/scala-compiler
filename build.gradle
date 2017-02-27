@@ -1,12 +1,10 @@
-group 'io.github.abigailbuccaneer'
-version '1.0-SNAPSHOT'
-
-apply plugin: 'application'
-apply plugin: 'java'
-
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
-mainClassName = 'io.github.abigailbuccaneer.ScalacIvy'
+plugins {
+    id 'application'
+    id 'com.jfrog.bintray' version '1.7.3'
+    id 'ivy-publish'
+    id 'java'
+    id 'maven-publish'
+}
 
 repositories {
     mavenCentral()
@@ -14,4 +12,74 @@ repositories {
 
 dependencies {
     compile group: 'org.apache.ivy', name: 'ivy', version: '2.4.0'
+}
+
+group 'io.github.abigailbuccaneer'
+version '1.0-SNAPSHOT'
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+mainClassName = 'io.github.abigailbuccaneer.ScalacIvy'
+
+ext.url = 'https://github.com/AbigailBuccaneer/scala-compiler'
+description = 'An Apache Ivy™-powered wrapper around the Scala compiler'
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allJava
+    classifier 'sources'
+}
+
+publishing {
+    repositories {
+        ivy {
+            url "${System.getenv('HOME')}/.ivy2/local"
+            layout 'ivy'
+        }
+    }
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourceJar
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', '${project.groupId}:${project.artifactId}')
+                root.appendNode('description', project.description)
+                root.appendNode('url', url)
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'MIT License')
+                license.appendNode('url', 'http://www.opensource.org/licenses/mit-license.php')
+                def developer = root.appendNode('developers').appendNode('developer')
+                developer.appendNode('name', 'Abigail Bunyan')
+                developer.appendNode('email', 'AbigailBuccaneer@users.noreply.github.com')
+                developer.appendNode('organization', 'N/A')
+                developer.appendNode('organizationUrl', 'https://github.com/AbigailBuccaneer')
+                def scm = root.appendNode('scm')
+                scm.appendNode('connection', 'scm:git:https://github.com/AbigailBuccaneer/scala-compiler.git')
+                scm.appendNode('developerConnection', 'scm:git:ssh://git@github.com:AbigailBuccaneer/scala-compiler.git')
+                scm.appendNode('url', url)
+            }
+        }
+
+        ivyJava(IvyPublication) {
+            from components.java
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('BINTRAY_USER')
+    key = System.getenv('BINTRAY_KEY')
+    publications = ['mavenJava']
+    pkg {
+        repo = 'maven'
+        name = project.name
+        desc = project.description
+        websiteUrl = url
+        issueTrackerUrl = url + '/issues'
+
+        licenses = ['MIT']
+        vcsUrl = url
+        version {
+            name = project.version
+        }
+    }
 }
