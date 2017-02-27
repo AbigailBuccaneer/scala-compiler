@@ -15,7 +15,7 @@ dependencies {
 }
 
 group 'io.github.abigailbuccaneer'
-version '0.2'
+version '0.3-SNAPSHOT'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 mainClassName = 'io.github.abigailbuccaneer.ScalacIvy'
@@ -80,6 +80,7 @@ bintray {
         vcsUrl = url
         version {
             name = project.version
+            vcsTag = 'v' + project.version
         }
     }
 }
