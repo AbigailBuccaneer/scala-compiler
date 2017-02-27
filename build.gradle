@@ -1,0 +1,17 @@
+group 'io.github.abigailbuccaneer'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'application'
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+mainClassName = 'io.github.abigailbuccaneer.ScalacIvy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.apache.ivy', name: 'ivy', version: '2.4.0'
+}
