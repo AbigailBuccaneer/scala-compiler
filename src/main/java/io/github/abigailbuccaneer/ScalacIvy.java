@@ -89,11 +89,16 @@ public class ScalacIvy {
             zincClasspath[i++] = artifact.getValue().toURI().toURL();
         }
 
+        StringBuilder scalaPath = new StringBuilder();
+        String delimeter = "";
+        for (Map.Entry<String, File> artifact : scalacArtifacts.entrySet()) {
+            scalaPath.append(delimeter).append(artifact.getValue().getCanonicalPath());
+            delimeter = File.pathSeparator;
+        }
+
         List<String> arguments = new ArrayList<>();
-        arguments.add("-scala-compiler");
-        arguments.add(scalacArtifacts.get("scala-compiler").getCanonicalPath());
-        arguments.add("-scala-library");
-        arguments.add(scalacArtifacts.get("scala-library").getCanonicalPath());
+        arguments.add("-scala-path");
+        arguments.add(scalaPath.toString());
         arguments.add("-sbt-interface");
         arguments.add(zincArtifacts.get("sbt-interface").getCanonicalPath());
         arguments.add("-compiler-interface");
