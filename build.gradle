@@ -18,7 +18,17 @@ group 'io.github.abigailbuccaneer'
 version '0.3-SNAPSHOT'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
-mainClassName = 'io.github.abigailbuccaneer.ScalacIvy'
+applicationName = 'scalac'
+mainClassName = project.group + '.ScalaCompiler'
+
+task createRunnerStartScripts(type: CreateStartScripts) {
+    applicationName = 'scala'
+    mainClassName = project.group + '.ScalaRunner'
+    classpath = startScripts.classpath
+    outputDir = startScripts.outputDir
+}
+
+startScripts.dependsOn(createRunnerStartScripts)
 
 ext.url = 'https://github.com/AbigailBuccaneer/scala-compiler'
 description = 'An Apache Ivy™-powered wrapper around the Scala compiler'
