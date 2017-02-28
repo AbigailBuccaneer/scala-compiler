@@ -38,6 +38,15 @@ task sourceJar(type: Jar) {
     classifier 'sources'
 }
 
+task javadocs(type: Javadoc) {
+    source = sourceJar.source
+}
+
+task javadocJar(type: Jar) {
+    from javadocs.destinationDir
+    classifier 'javadoc'
+}
+
 publishing {
     repositories {
         ivy {
@@ -49,6 +58,7 @@ publishing {
         mavenJava(MavenPublication) {
             from components.java
             artifact sourceJar
+            artifact javadocJar
             pom.withXml {
                 def root = asNode()
                 root.appendNode('name', '${project.groupId}:${project.artifactId}')
