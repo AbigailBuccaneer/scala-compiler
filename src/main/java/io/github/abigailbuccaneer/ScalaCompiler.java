@@ -13,15 +13,11 @@ import org.apache.ivy.util.filter.FilterHelper;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.text.ParseException;
 import java.util.*;
 
-public class ScalacIvy {
+public class ScalaCompiler {
     private static Map<String, File> resolveArtifacts(Ivy ivy, ModuleRevisionId mrid, ResolveOptions options) throws IOException, ParseException {
         ResolveReport report = ivy.resolve(mrid, options, false);
         if (report.hasError()) {
@@ -37,39 +33,15 @@ public class ScalacIvy {
         return result;
     }
 
-    private static void invokeClass(URL[] classpath, String mainClass, String[] args) throws Throwable {
-        URLClassLoader loader = new URLClassLoader(classpath);
-        Class<?> clazz = null;
-        try {
-            clazz = loader.loadClass(mainClass);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Class " + mainClass + " not found", e);
-        }
-        Method method = null;
-        try {
-            method = clazz.getMethod("main", args.getClass());
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException("Class " + mainClass + " has no main method", e);
-        }
-        if (method.getReturnType() != void.class || !Modifier.isStatic(method.getModifiers()) || !Modifier.isPublic(method.getModifiers())) {
-            throw new IllegalArgumentException("main method on class " + mainClass + " has incorrect signature");
-        }
-        try {
-            method.invoke(null, new Object[] { args });
-        } catch (InvocationTargetException e) {
-            throw e.getCause();
-        }
-    }
-
     public static void main(String[] args) throws Throwable {
-        String scalacRevision = System.getProperty("scala.version", "2.9.3");
+        Message.setDefaultLogger(new DefaultMessageLogger(Message.MSG_WARN));
+
         IvySettings ivySettings = new IvySettings();
         Ivy ivy = Ivy.newInstance(ivySettings);
         ResolveOptions resolveOptions = new ResolveOptions()
                 .setConfs(new String[]{"default"})
                 .setArtifactFilter(FilterHelper.getArtifactTypeFilter(new String[]{"jar"}))
                 .setOutputReport(false);
-        Message.setDefaultLogger(new DefaultMessageLogger(Message.MSG_WARN));
         try {
             ivy.configureDefault();
         } catch (ParseException | IOException e) {
@@ -78,10 +50,12 @@ public class ScalacIvy {
         }
 
         ModuleRevisionId zinc = new ModuleRevisionId(new ModuleId("com.typesafe.zinc", "zinc"), "0.3.13");
-        ModuleRevisionId scalac = new ModuleRevisionId(new ModuleId("org.scala-lang", "scala-compiler"), scalacRevision);
 
         Map<String, File> zincArtifacts = resolveArtifacts(ivy, zinc, resolveOptions);
-        Map<String, File> scalacArtifacts = resolveArtifacts(ivy, scalac, resolveOptions);
+        ArtifactDownloadReport[] scalacArtifacts = ScalaIvyResolver.resolve(ivy);
+        if (scalacArtifacts == null) {
+            System.exit(1);
+        }
 
         URL[] zincClasspath = new URL[zincArtifacts.size()];
         int i = 0;
@@ -91,8 +65,8 @@ public class ScalacIvy {
 
         StringBuilder scalaPath = new StringBuilder();
         String delimeter = "";
-        for (Map.Entry<String, File> artifact : scalacArtifacts.entrySet()) {
-            scalaPath.append(delimeter).append(artifact.getValue().getCanonicalPath());
+        for (ArtifactDownloadReport artifact : scalacArtifacts) {
+            scalaPath.append(delimeter).append(artifact.getLocalFile());
             delimeter = File.pathSeparator;
         }
 
@@ -122,14 +96,7 @@ public class ScalacIvy {
             }
         }
 
-        System.out.print("com.typesafe.zinc.Main");
-        for (String argument : arguments) {
-            System.out.print(' ');
-            System.out.print(argument);
-        }
-        System.out.println();
-
-        invokeClass(zincClasspath, "com.typesafe.zinc.Main", arguments.toArray(new String[]{}));
+        new MainClassLoader(zincClasspath).invokeMain("com.typesafe.zinc.Main", arguments.toArray(new String[]{}));
         System.exit(0);
     }
 }
