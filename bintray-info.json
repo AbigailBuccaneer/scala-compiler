@@ -1,0 +1,10 @@
+{
+  "package": {
+    "subject": "abigail",
+    "repo": "maven",
+    "name": "${name}"
+  },
+  "version": {
+    "name": "${version}"
+  }
+}

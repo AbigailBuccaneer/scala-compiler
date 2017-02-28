@@ -15,7 +15,7 @@ dependencies {
 }
 
 group 'io.github.abigailbuccaneer'
-version '0.3'
+version '0.3.1-SNAPSHOT'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 applicationName = 'scalac'
@@ -47,6 +47,18 @@ task javadocJar(type: Jar) {
     classifier 'javadoc'
 }
 
+ext.bintrayInfoFile = new File(buildDir, 'bintray-info.json')
+
+task createBintrayInfoFile(type: Copy) {
+    from rootDir
+    into bintrayInfoFile.parentFile
+    include bintrayInfoFile.name
+    expand([
+            name   : project.name,
+            version: project.version
+    ])
+}
+
 publishing {
     repositories {
         ivy {
@@ -59,6 +71,10 @@ publishing {
             from components.java
             artifact sourceJar
             artifact javadocJar
+            artifact(bintrayInfoFile) {
+                builtBy(createBintrayInfoFile)
+                extension bintrayInfoFile.name
+            }
             pom.withXml {
                 def root = asNode()
                 root.appendNode('name', '${project.groupId}:${project.artifactId}')
@@ -95,7 +111,7 @@ artifactory {
             maven = true
         }
         defaults {
-            publications ('mavenJava')
+            publications('mavenJava')
         }
     }
 }
