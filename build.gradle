@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'com.jfrog.artifactory' version '4.4.13'
+    id 'com.jfrog.bintray' version '1.7.3'
     id 'ivy-publish'
     id 'java'
     id 'maven-publish'
@@ -15,7 +16,7 @@ dependencies {
 }
 
 group 'io.github.abigailbuccaneer'
-version '0.3.1'
+version '0.3.2'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 applicationName = 'scalac'
@@ -116,6 +117,19 @@ artifactory {
         }
         defaults {
             publications('mavenJava')
+        }
+    }
+}
+
+bintray {
+    user = "$bintray_user"
+    key = "$bintray_key"
+    pkg {
+        repo = 'maven'
+        name = project.name
+        publications = ['mavenJava']
+        version {
+            name = project.version
         }
     }
 }
