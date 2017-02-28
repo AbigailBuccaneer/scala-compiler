@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'com.jfrog.bintray' version '1.7.3'
+    id 'com.jfrog.artifactory' version '4.4.13'
     id 'ivy-publish'
     id 'java'
     id 'maven-publish'
@@ -65,22 +65,17 @@ publishing {
     }
 }
 
-bintray {
-    user = System.getenv('BINTRAY_USER')
-    key = System.getenv('BINTRAY_KEY')
-    publications = ['mavenJava']
-    pkg {
-        repo = 'maven'
-        name = project.name
-        desc = project.description
-        websiteUrl = url
-        issueTrackerUrl = url + '/issues'
-
-        licenses = ['MIT']
-        vcsUrl = url
-        version {
-            name = project.version
-            vcsTag = 'v' + project.version
+artifactory {
+    contextUrl = "${artifactory_contextUrl}"
+    publish {
+        repository {
+            repoKey = 'oss-snapshot-local'
+            username = "${artifactory_user}"
+            password = "${artifactory_password}"
+            maven = true
+        }
+        defaults {
+            publications ('mavenJava')
         }
     }
 }
