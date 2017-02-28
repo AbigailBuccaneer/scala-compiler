@@ -15,7 +15,7 @@ dependencies {
 }
 
 group 'io.github.abigailbuccaneer'
-version '0.3.1-SNAPSHOT'
+version '0.3.1'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 applicationName = 'scalac'
@@ -105,7 +105,11 @@ artifactory {
     contextUrl = "${artifactory_contextUrl}"
     publish {
         repository {
-            repoKey = 'oss-snapshot-local'
+            if (project.version.endsWith('-SNAPSHOT')) {
+                repoKey = 'oss-snapshot-local'
+            } else {
+                repoKey = 'oss-release-local'
+            }
             username = "${artifactory_user}"
             password = "${artifactory_password}"
             maven = true
