@@ -78,6 +78,12 @@ public class ScalaCompiler {
         arguments.add("-compiler-interface");
         arguments.add(zincArtifacts.get("compiler-interface").getCanonicalPath());
 
+        String javaHome = System.getenv("JAVA_HOME");
+        if (javaHome != null) {
+            arguments.add("-java-home");
+            arguments.add(javaHome);
+        }
+
         ListIterator<String> argIter = Arrays.asList(args).listIterator();
         while (argIter.hasNext()) {
             String arg = argIter.next();

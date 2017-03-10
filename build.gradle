@@ -16,7 +16,7 @@ dependencies {
 }
 
 group 'io.github.abigailbuccaneer'
-version '0.3.2'
+version '0.3.3'
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 applicationName = 'scalac'
